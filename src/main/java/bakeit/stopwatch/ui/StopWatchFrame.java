@@ -1,17 +1,21 @@
 package bakeit.stopwatch.ui;
-import java.awt.Color;
+
+import static java.lang.String.format;
+
+import bakeit.stopwatch.domain.StopWatch;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Time;
+import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 public class StopWatchFrame extends JFrame {
 
@@ -20,6 +24,10 @@ public class StopWatchFrame extends JFrame {
 
   private JButton controlButton;
   private JButton resetButton;
+
+  private StopWatch stopWatch = new StopWatch();
+
+  private Timer timer = new Timer(5, event -> updateTime());
 
   private ActionListener startListener = event -> {
     startClicked();
@@ -81,6 +89,9 @@ public class StopWatchFrame extends JFrame {
     removeListeners(controlButton);
     controlButton.addActionListener(stopListener);
     controlButton.setText("Stop");
+
+    stopWatch.start();
+    timer.start();
   }
 
   private void stopClicked() {
@@ -88,6 +99,10 @@ public class StopWatchFrame extends JFrame {
     controlButton.addActionListener(continueListener);
     controlButton.setText("Continue");
     resetButton.setEnabled(true);
+
+    stopWatch.pause();
+    timer.stop();
+    updateTime();
   }
 
   private void continueClicked() {
@@ -95,6 +110,9 @@ public class StopWatchFrame extends JFrame {
     controlButton.addActionListener(stopListener);
     controlButton.setText("Stop");
     resetButton.setEnabled(false);
+
+    stopWatch.start();
+    timer.start();
   }
 
   private void resetClicked() {
@@ -102,6 +120,21 @@ public class StopWatchFrame extends JFrame {
     controlButton.addActionListener(startListener);
     controlButton.setText("Start");
     resetButton.setEnabled(false);
+
+    stopWatch.reset();
+    updateTime();
+  }
+
+  private void updateTime() {
+    long millis = stopWatch.peek();
+
+    long hours = TimeUnit.MILLISECONDS.toHours(millis);
+    long minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60;
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60;
+    long remainingMillis = millis % 1000;
+
+    String timeToDisplay = format("%02d:%02d:%02d.%03d", hours, minutes, seconds, remainingMillis);
+    elapsedTimeLabel.setText(timeToDisplay);
   }
 
   private void removeListeners(AbstractButton button) {
