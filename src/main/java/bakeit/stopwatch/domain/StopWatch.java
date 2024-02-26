@@ -1,11 +1,14 @@
 package bakeit.stopwatch.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StopWatch {
 
   private long startedAt = 0;
   private long accumulatedTime = 0;
+
+  private List<Long> splitTimes = new ArrayList<>();
 
   public boolean isRunning() {
     return startedAt != 0;
@@ -42,6 +45,7 @@ public class StopWatch {
   public void reset() {
     startedAt = 0;
     accumulatedTime = 0;
+    splitTimes.clear();
   }
 
   /**
@@ -50,7 +54,13 @@ public class StopWatch {
    * @return the latest recorded split time.
    */
   public long splitTime() {
-    throw new UnsupportedOperationException("Not implemented yet.");
+    if (! isRunning()) {
+      throw new IllegalStateException("StopWatch not running.");
+    }
+
+    long splitTime = peek();
+    splitTimes.add(splitTime);
+    return splitTime;
   }
 
   /**
@@ -59,7 +69,7 @@ public class StopWatch {
    * @return a new list of split times.
    */
   public List<Long> getSplitTimes() {
-    throw new UnsupportedOperationException("Not implemented yet.");
+    return List.copyOf(splitTimes);
   }
 
 }
