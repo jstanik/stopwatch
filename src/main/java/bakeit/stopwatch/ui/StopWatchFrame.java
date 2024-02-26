@@ -57,7 +57,7 @@ public class StopWatchFrame extends JFrame {
   private void prepareGUI() {
     elapsedTimeLabel = new JLabel("00:00:00.000", JLabel.CENTER);
 
-    elapsedTimeLabel.setFont(elapsedTimeLabel.getFont().deriveFont(18f));
+    elapsedTimeLabel.setFont(elapsedTimeLabel.getFont().deriveFont(24f));
     elapsedTimeLabel.setSize(350, 100);
 
     controlPanel = new JPanel();
@@ -126,14 +126,14 @@ public class StopWatchFrame extends JFrame {
   }
 
   private void updateTime() {
-    long millis = stopWatch.peek();
+    long elapsedTime = stopWatch.peek();
 
-    long hours = TimeUnit.MILLISECONDS.toHours(millis);
-    long minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60;
-    long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60;
-    long remainingMillis = millis % 1000;
+    long hours = TimeUnit.MILLISECONDS.toHours(elapsedTime);
+    long minutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTime) % 60;
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTime) % 60;
+    long millis = elapsedTime % 1000;
 
-    String timeToDisplay = format("%02d:%02d:%02d.%03d", hours, minutes, seconds, remainingMillis);
+    String timeToDisplay = format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
     elapsedTimeLabel.setText(timeToDisplay);
   }
 

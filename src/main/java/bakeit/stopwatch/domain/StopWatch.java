@@ -1,5 +1,7 @@
 package bakeit.stopwatch.domain;
 
+import java.util.List;
+
 public class StopWatch {
 
   private long startedAt = 0;
@@ -40,6 +42,24 @@ public class StopWatch {
   public void reset() {
     startedAt = 0;
     accumulatedTime = 0;
+  }
+
+  /**
+   * Records new split time.
+   *
+   * @return the latest recorded split time.
+   */
+  public long splitTime() {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  /**
+   * Gets all the recorded split times since last reset.
+   *
+   * @return a new list of split times.
+   */
+  public List<Long> getSplitTimes() {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
 }
