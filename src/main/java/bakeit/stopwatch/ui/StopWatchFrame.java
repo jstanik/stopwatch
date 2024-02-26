@@ -3,6 +3,7 @@ package bakeit.stopwatch.ui;
 import static java.lang.String.format;
 
 import bakeit.stopwatch.domain.StopWatch;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -11,19 +12,29 @@ import java.awt.event.ActionListener;
 import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractButton;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.Timer;
 
 public class StopWatchFrame extends JFrame {
 
   private JLabel elapsedTimeLabel;
   private JPanel controlPanel;
+  private JPanel splitTimePanel;
 
   private JButton controlButton;
   private JButton resetButton;
+  private JButton splitTimeButton;
+
+  private DefaultListModel<Long> splitTimeModel;
+  private JList<Long> splitTimeList;
 
   private StopWatch stopWatch = new StopWatch();
 
@@ -46,9 +57,14 @@ public class StopWatchFrame extends JFrame {
     resetClicked();
   };
 
+  private ActionListener splitTimeListener = event -> {
+    splitTimeClicked();
+  };
+
+
   public StopWatchFrame() {
     super("Stop Watch");
-    setSize(300, 200);
+    setSize(400, 400);
     setLayout(new GridBagLayout());
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     prepareGUI();
@@ -66,14 +82,19 @@ public class StopWatchFrame extends JFrame {
     layout.setVgap(10);
     controlPanel.setLayout(layout);
 
+    controlButton = new JButton("Start");
+    controlButton.addActionListener(startListener);
+    controlPanel.add(controlButton);
+
+    splitTimeButton = new JButton("Split Time");
+    splitTimeButton.setEnabled(false);
+    splitTimeButton.addActionListener(splitTimeListener);
+    controlPanel.add(splitTimeButton);
+
     resetButton = new JButton("Reset");
     resetButton.addActionListener(resetListener);
     resetButton.setEnabled(false);
     controlPanel.add(resetButton);
-
-    controlButton = new JButton("Start");
-    controlButton.addActionListener(startListener);
-    controlPanel.add(controlButton);
 
     GridBagConstraints gbc = new GridBagConstraints();
 
@@ -83,12 +104,22 @@ public class StopWatchFrame extends JFrame {
 
     gbc.gridy = 1;
     add(controlPanel, gbc);
+
+    splitTimePanel = new JPanel();
+    splitTimeModel = new DefaultListModel<>();
+    splitTimeList = new JList<>(splitTimeModel);
+    splitTimeList.setCellRenderer(new SplitTimeRenderer());
+    splitTimePanel.add(new JScrollPane(splitTimeList));
+
+    gbc.gridy = 2;
+    add(splitTimePanel, gbc);
   }
 
   private void startClicked() {
     removeListeners(controlButton);
     controlButton.addActionListener(stopListener);
     controlButton.setText("Stop");
+    splitTimeButton.setEnabled(true);
 
     stopWatch.start();
     timer.start();
@@ -99,6 +130,7 @@ public class StopWatchFrame extends JFrame {
     controlButton.addActionListener(continueListener);
     controlButton.setText("Continue");
     resetButton.setEnabled(true);
+    splitTimeButton.setEnabled(false);
 
     stopWatch.pause();
     timer.stop();
@@ -110,6 +142,7 @@ public class StopWatchFrame extends JFrame {
     controlButton.addActionListener(stopListener);
     controlButton.setText("Stop");
     resetButton.setEnabled(false);
+    splitTimeButton.setEnabled(true);
 
     stopWatch.start();
     timer.start();
@@ -120,26 +153,47 @@ public class StopWatchFrame extends JFrame {
     controlButton.addActionListener(startListener);
     controlButton.setText("Start");
     resetButton.setEnabled(false);
+    splitTimeModel.removeAllElements();
 
     stopWatch.reset();
     updateTime();
   }
 
-  private void updateTime() {
+  private void splitTimeClicked() {
     long elapsedTime = stopWatch.peek();
+    splitTimeModel.insertElementAt(elapsedTime, 0);
+  }
+
+  private void updateTime() {
+    elapsedTimeLabel.setText(formatTime(stopWatch.peek()));
+  }
+
+  private String formatTime(long elapsedTime) {
 
     long hours = TimeUnit.MILLISECONDS.toHours(elapsedTime);
     long minutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTime) % 60;
     long seconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTime) % 60;
     long millis = elapsedTime % 1000;
 
-    String timeToDisplay = format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
-    elapsedTimeLabel.setText(timeToDisplay);
+    return format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
   }
 
   private void removeListeners(AbstractButton button) {
     for (ActionListener listener : button.getActionListeners()) {
       controlButton.removeActionListener(listener);
     }
+  }
+
+  public class SplitTimeRenderer extends JLabel implements ListCellRenderer<Long> {
+
+    @Override
+    public Component getListCellRendererComponent(JList<? extends Long> list, Long splitTime, int index,
+        boolean isSelected, boolean cellHasFocus) {
+
+      setText(formatTime(splitTime));
+
+      return this;
+    }
+
   }
 }
